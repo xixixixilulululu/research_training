@@ -74,8 +74,9 @@ tail -f ~/logs/busi_task1-<JOBID>.out   # 看实时输出
 
   Train loss 从 0.617 → 0.007（epoch 20 时几乎降到 0），Test loss 在 0.3~0.5 之间波动、没有随
   epoch 持续下降。这是一个**过拟合（overfitting）**的典型信号，值得你自己打开
-  `outputs/loss_curve.png` 看看曲线、想想为什么会这样、可以怎么改善（比如提前停止训练、加正则化/
-  数据增强等）——这正是 PDF 里要求你自己"观察 loss 曲线、理解 overfitting"的部分。
+  `outputs/job44_vs_job49_loss_curve.png`（左边那张就是 Job 44）看看曲线、想想为什么会这样、
+  可以怎么改善（比如提前停止训练、加正则化/数据增强等）——这正是 PDF 里要求你自己
+  "观察 loss 曲线、理解 overfitting"的部分。
 
 ## 精度改进实验（对照 Job 44 基线）
 
@@ -104,9 +105,21 @@ tail -f ~/logs/busi_task1-<JOBID>.out   # 看实时输出
   | F1 score | 0.9348 | 0.9565 | +0.0217 |
 
   且 train loss 只降到 ~0.097（不像 Job 44 降到 0.007），说明正则化确实在起作用，
-  不是靠死记硬背训练集刷出来的分数。当前 `outputs/` 下的权重和 loss 曲线就是 Job 49 这次跑的结果。
+  不是靠死记硬背训练集刷出来的分数。Job 49 的图表/数字保存在 `outputs/job49_loss_curve.png`、
+  `outputs/job49_metrics_curve.png`、`outputs/job49_history.json`（模型权重文件后来被
+  再往后几次跑训练覆盖了，只留了图表和数字，权重本身不影响这些结论）。
 
 **结论 / 后续可调**：patience 太小（5）在这种小测试集上容易被单个 epoch 的噪声误判提前停止；
 patience 更大（8）让模型有更多机会找到更好的一轮。如果还想继续调，可以试试更大的 patience、
 学习率衰减（scheduler）、或者引入独立的验证集来做早停判断（目前是直接拿 test 集做早停，
 样本量小时这样做略有"偷看"测试集的风险，是可以在 Day 4/6 分析里想一想的点）。
+
+## outputs/ 文件命名规则
+
+从 Job 50 开始，notebook 会自动用 Slurm job 号给每次跑产出的文件打标签（`job{ID}_xxx`），
+在交互式终端跑（没有 job 号）就叫 `job_local_xxx`，不用再手动改名，也不会出现新的一次跑
+把旧结果覆盖掉的问题。规则：
+- `job{N}_loss_curve.png` / `job{N}_metrics_curve.png` / `job{N}_test_metrics.png` / `job{N}_history.json` / `job{N}_model.pt`
+- 早期几次（Job 44/48/49，那时候还没有这套自动命名）是手动改的名字：
+  `job49_loss_curve.png`、`job49_metrics_curve.png`、`job49_history.json`（Job 49 的模型权重文件后来被覆盖，没保留下来）；
+  `job44_vs_job49_loss_curve.png`、`job44_vs_job49_metrics.png` 是两次结果的并排对比图。
