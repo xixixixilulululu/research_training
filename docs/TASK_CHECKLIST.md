@@ -30,10 +30,10 @@
 | 用 AI agent 帮忙写代码、注释、结果文档、分析 | ✅ | 就是我们做的这件事 |
 | 用 ResNet50 做良性/恶性二分类，写成 notebook | ✅ | `BUSI_Classification.ipynb` |
 | 输入图像 resize 到 224×224 | ✅ | |
-| 用两个 xlsx 文件划分训练/测试集，训练集上训练、测试集上评估 | ✅ | 517 训练 / 130 测试，无重复 |
+| 用两个 xlsx 文件划分训练/测试集，训练集上训练、测试集上评估 | ✅ | 517 训练 / 130 测试，无重复；最新一版又从 517 条训练集里按分层抽样切出 train_sub(413)/val(104)，早停/选模型只看 val，test 130 条全程不参与训练调参，避免"偷看测试集" |
 | 加载 ImageNet 预训练权重 | ✅ | `ResNet50_Weights.IMAGENET1K_V2` |
 | 计算 accuracy、recall、F1 等标准分类指标 | ✅ | 结果：Accuracy 0.9077 / Precision 0.9247 / Recall 0.9451 / F1 0.9348 |
-| 画每个 epoch 的 train/test loss 曲线 | ✅ | `outputs/loss_curve.png` |
+| 画每个 epoch 的 train/test loss 曲线 | ✅ | `outputs/loss_curve.png`（Job 44/49 基线，train vs test）；最新一版逐 epoch 画的是 train vs **val**（`outputs/loss_curve_val.png`），test 只在训练全部结束后单独评估一次（`outputs/test_metrics_final.png`），避免逐 epoch 曲线里混进 test 数据 |
 | **观察** loss 曲线，理解 underfitting/overfitting，据此判断合适的训练轮数 | ⛔ **未完成** | 图已经画出来了，而且已经出现了明显的过拟合信号（train loss→0.007，test loss 却在 0.3~0.5 波动），但"观察 + 理解 + 判断"这一步是 PDF 明确要求你自己做的，我不能替你下结论 |
 | 测试集上逐张显示图片 + 真实标签 + 预测标签 | ✅ | notebook 第 11 节，预测错的图会标红 |
 | 每个代码 cell 前面有文字说明，代码有必要注释 | ✅ | |
