@@ -15,7 +15,10 @@
 - `BUSI_Classification.ipynb` — Training Task 1 的主 notebook：数据加载 → ResNet50 → 训练 → loss 曲线 →
   accuracy/recall/F1 → 预测结果可视化 → 保存模型。**已经通过 Job 44 正式跑完**，打开就能看到完整的
   20 epoch 训练结果（见下面"跑过的记录"）。
-- `TASK_CHECKLIST.md` — 对照《Research Training Instructions (1)》逐条核对的完成情况清单。
+- `docs/` — 概念/计划类文档，跟代码分开放：
+  - `TASK_CHECKLIST.md` — 对照《Research Training Instructions (1)》逐条核对的完成情况清单
+  - `STUDY_PLAN.md` — 7 天学习计划
+  - `Research_Training_Instructions_notes.pdf`、`CV_Slides_Day20_notes.pdf` — 课件/说明笔记（衍生自老师材料，不进公开仓库，只在本地）
 
 ## 数据集
 
