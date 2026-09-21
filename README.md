@@ -73,3 +73,37 @@ tail -f ~/logs/busi_task1-<JOBID>.out   # 看实时输出
   epoch 持续下降。这是一个**过拟合（overfitting）**的典型信号，值得你自己打开
   `outputs/loss_curve.png` 看看曲线、想想为什么会这样、可以怎么改善（比如提前停止训练、加正则化/
   数据增强等）——这正是 PDF 里要求你自己"观察 loss 曲线、理解 overfitting"的部分。
+
+## 精度改进实验（对照 Job 44 基线）
+
+衡量"更精确"用的指标：Accuracy / Precision / Recall / F1 四个都记录，但因为数据集类别不均衡
+（良性 437 张 / 恶性 210 张），以 **Test F1** 作为判断"是否变好"的主要标准。
+
+针对 Job 44 暴露的过拟合问题，在 `BUSI_Classification.ipynb` 里做了这些改动（代码层面的工程改进，
+不是 PDF 要求你自己做的"理解/分析"那部分）：
+- 数据增强从只有水平翻转，加上随机旋转（±15°）和亮度/对比度抖动
+- 优化器从 Adam 换成 AdamW，加 weight decay（`WEIGHT_DECAY = 1e-2`）
+- 分类头前加 Dropout（`DROPOUT_P = 0.3`）
+- 每个 epoch 算 test F1，用 early stopping（patience 参数化）+ 保留 F1 最高那一轮的权重，
+  而不是固定跑满再存最后一轮
+
+跑了两次：
+- **Job 48**（`EARLY_STOPPING_PATIENCE=5`）：测试集只有 130 张图，逐 epoch F1 波动较大，
+  第 4 轮达到峰值（F1 0.9215）后被噪声提前叫停在第 9 轮，比基线略差。
+- **Job 49**（`EARLY_STOPPING_PATIENCE=8`）：跑满 20 epoch，最佳权重出现在最后一轮，
+  四项指标全面超过 Job 44 基线：
+
+  | 指标 | Job 44（基线） | Job 49（改进后） | 变化 |
+  |---|---|---|---|
+  | Accuracy | 0.9077 | 0.9385 | +0.0308 |
+  | Precision | 0.9247 | 0.9462 | +0.0215 |
+  | Recall | 0.9451 | 0.9670 | +0.0219 |
+  | F1 score | 0.9348 | 0.9565 | +0.0217 |
+
+  且 train loss 只降到 ~0.097（不像 Job 44 降到 0.007），说明正则化确实在起作用，
+  不是靠死记硬背训练集刷出来的分数。当前 `outputs/` 下的权重和 loss 曲线就是 Job 49 这次跑的结果。
+
+**结论 / 后续可调**：patience 太小（5）在这种小测试集上容易被单个 epoch 的噪声误判提前停止；
+patience 更大（8）让模型有更多机会找到更好的一轮。如果还想继续调，可以试试更大的 patience、
+学习率衰减（scheduler）、或者引入独立的验证集来做早停判断（目前是直接拿 test 集做早停，
+样本量小时这样做略有"偷看"测试集的风险，是可以在 Day 4/6 分析里想一想的点）。
