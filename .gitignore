@@ -1,0 +1,9 @@
+*.pt
+*.pth
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Course/instructor material derivatives — not redistributed in a public repo
+Research_Training_Instructions_notes.pdf
+CV_Slides_Day20_notes.pdf
