@@ -13,7 +13,7 @@
   CUDA available 显示 False 是正常的——交互式终端没有分配 GPU，跑 Slurm job 时才会分到 GPU，可参考
   `../kean/README.md` 里 Job 42 的记录）。
 - `BUSI_Classification.ipynb` — Training Task 1 的主 notebook：数据加载 → ResNet50 → 训练 → loss 曲线 →
-  accuracy/recall/F1 → 预测结果可视化 → 保存模型。**已经通过 Job 44 正式跑完**，打开就能看到完整的
+  accuracy/recall/F1 → 预测结果可视化 → 保存模型。**已经通过第 1 次正式训练跑完**，打开就能看到完整的
   20 epoch 训练结果（见下面"跑过的记录"）。
 - `docs/` — 概念/计划类文档，跟代码分开放：
   - `TASK_CHECKLIST.md` — 对照《Research Training Instructions (1)》逐条核对的完成情况清单
@@ -63,7 +63,7 @@ tail -f ~/logs/busi_task1-<JOBID>.out   # 看实时输出
     所以把 `NUM_WORKERS` 默认设成了 0（这个数据集不大，单进程读取足够快）。
   - 正式的 `BUSI_Classification.ipynb` 文件重新生成为**未执行**的干净版本（`NUM_EPOCHS=20`）后，
     跑 2 epoch 用的临时文件和产出已清理。
-- **Job 44**（`busi_task1`，GPU 节点 `promaxgb10-4415`）：正式训练，20 epoch，跑完用时约 3~6 分钟。
+- **第 1 次**（Slurm job 44，`busi_task1`，GPU 节点 `promaxgb10-4415`）：正式训练，20 epoch，跑完用时约 3~6 分钟。
   最终结果：
   | 指标 | 数值 |
   |---|---|
@@ -74,16 +74,16 @@ tail -f ~/logs/busi_task1-<JOBID>.out   # 看实时输出
 
   Train loss 从 0.617 → 0.007（epoch 20 时几乎降到 0），Test loss 在 0.3~0.5 之间波动、没有随
   epoch 持续下降。这是一个**过拟合（overfitting）**的典型信号，值得你自己打开
-  `outputs/job44_vs_job49_loss_curve.png`（左边那张就是 Job 44）看看曲线、想想为什么会这样、
-  可以怎么改善（比如提前停止训练、加正则化/数据增强等）——这正是 PDF 里要求你自己
-  "观察 loss 曲线、理解 overfitting"的部分。
+  `outputs/run1_vs_run3_loss_curve.png`（左边那张就是这一次，也就是"第 1 次"）看看曲线、
+  想想为什么会这样、可以怎么改善（比如提前停止训练、加正则化/数据增强等）——这正是 PDF 里
+  要求你自己"观察 loss 曲线、理解 overfitting"的部分。
 
-## 精度改进实验（对照 Job 44 基线）
+## 精度改进实验（对照第 1 次基线）
 
 衡量"更精确"用的指标：Accuracy / Precision / Recall / F1 四个都记录，但因为数据集类别不均衡
 （良性 437 张 / 恶性 210 张），以 **Test F1** 作为判断"是否变好"的主要标准。
 
-针对 Job 44 暴露的过拟合问题，在 `BUSI_Classification.ipynb` 里做了这些改动（代码层面的工程改进，
+针对第 1 次暴露的过拟合问题，在 `BUSI_Classification.ipynb` 里做了这些改动（代码层面的工程改进，
 不是 PDF 要求你自己做的"理解/分析"那部分）：
 - 数据增强从只有水平翻转，加上随机旋转（±15°）和亮度/对比度抖动
 - 优化器从 Adam 换成 AdamW，加 weight decay（`WEIGHT_DECAY = 1e-2`）
@@ -92,21 +92,21 @@ tail -f ~/logs/busi_task1-<JOBID>.out   # 看实时输出
   而不是固定跑满再存最后一轮
 
 跑了两次：
-- **Job 48**（`EARLY_STOPPING_PATIENCE=5`）：测试集只有 130 张图，逐 epoch F1 波动较大，
-  第 4 轮达到峰值（F1 0.9215）后被噪声提前叫停在第 9 轮，比基线略差。
-- **Job 49**（`EARLY_STOPPING_PATIENCE=8`）：跑满 20 epoch，最佳权重出现在最后一轮，
-  四项指标全面超过 Job 44 基线：
+- **第 2 次**（`EARLY_STOPPING_PATIENCE=5`）：测试集只有 130 张图，逐 epoch F1 波动较大，
+  第 4 轮达到峰值（F1 0.9215）后被噪声提前叫停在第 9 轮，比基线略差。没有留下单独文件。
+- **第 3 次**（`EARLY_STOPPING_PATIENCE=8`）：跑满 20 epoch，最佳权重出现在最后一轮，
+  四项指标全面超过第 1 次的基线：
 
-  | 指标 | Job 44（基线） | Job 49（改进后） | 变化 |
+  | 指标 | 第 1 次（基线） | 第 3 次（改进后） | 变化 |
   |---|---|---|---|
   | Accuracy | 0.9077 | 0.9385 | +0.0308 |
   | Precision | 0.9247 | 0.9462 | +0.0215 |
   | Recall | 0.9451 | 0.9670 | +0.0219 |
   | F1 score | 0.9348 | 0.9565 | +0.0217 |
 
-  且 train loss 只降到 ~0.097（不像 Job 44 降到 0.007），说明正则化确实在起作用，
-  不是靠死记硬背训练集刷出来的分数。Job 49 的图表/数字保存在 `outputs/job49_loss_curve.png`、
-  `outputs/job49_metrics_curve.png`、`outputs/job49_history.json`（模型权重文件后来被
+  且 train loss 只降到 ~0.097（不像第 1 次降到 0.007），说明正则化确实在起作用，
+  不是靠死记硬背训练集刷出来的分数。这次的图表/数字保存在 `outputs/run3_loss_curve.png`、
+  `outputs/run3_metrics_curve.png`、`outputs/run3_history.json`（模型权重文件后来被
   再往后几次跑训练覆盖了，只留了图表和数字，权重本身不影响这些结论）。
 
 **结论 / 后续可调**：patience 太小（5）在这种小测试集上容易被单个 epoch 的噪声误判提前停止；
@@ -116,22 +116,21 @@ patience 更大（8）让模型有更多机会找到更好的一轮。如果还�
 
 ## outputs/ 文件命名规则
 
-Job 50/53/56 那几次是用 Slurm job 号命名文件（`job{ID}_xxx`）的，后来发现这台集群是所有用户
-共用的，job 号会被别人的任务跳号（比如 53 后面直接跳到 56），跟"我们自己训练了几次"对不上，
-所以从下一次正式跑开始改成自己维护的连续序号：`docs/run_counter.txt` 里存着"下一次该用几号"，
-每次在 Slurm 里跑完自动 +1 写回去，不再依赖 Slurm 自己的计数器。规则：
+文件一律按"我们自己训练了第几次"编号，不用 Slurm 分配的 job 号——这台集群是所有用户共用的，
+job 号会被别人的任务跳号（比如之前 53 后面直接跳到 56），跟"训练了几次"对不上。
+`docs/run_counter.txt` 里存着"下一次该用几号"，每次在 Slurm 里跑完自动 +1 写回去。规则：
 - `run{N}_loss_curve.png` / `run{N}_metrics_curve.png` / `run{N}_test_metrics.png` / `run{N}_history.json` / `run{N}_model.pt`
 - 在交互式终端跑（sanity check，没有 Slurm job）统一叫 `run_local_xxx`，不占用正式编号
-- 前 6 次正式训练发生在切换到这套编号之前，对照关系是：
+- 前 6 次正式训练当时还在用 Slurm job 号命名，事后已经按训练顺序改成了 `run1`~`run6`：
 
-  | 我们自己数的"第几次" | 对应的旧文件名 | 说明 |
-  |---|---|---|
-  | 第 1 次 | `job49_loss_curve.png` 等（当时叫 `loss_curve.png`） | Job 44，无正则化基线 |
-  | 第 2 次 | 没留下单独文件 | Job 48，patience=5，效果比 Job 44 差 |
-  | 第 3 次 | `job49_*` | Job 49，patience=8，test 集调参（后来发现偷看测试集） |
-  | 第 4 次 | `job50_*` | Job 50，改成 val 集调参 |
-  | 第 5 次 | `job53_*` | Job 53，加 CHECKPOINT_METRIC 开关 + temperature scaling |
-  | 第 6 次 | `job56_*` | Job 56，打开 5 折交叉验证诊断 |
+  | 第几次 | 当时的 Slurm job 号 | 说明 | 文件 |
+  |---|---|---|---|
+  | 第 1 次 | Job 44 | 无正则化基线，明显过拟合 | 没有单独留存（原文件后来被覆盖），只在 `run1_vs_run3_*` 对比图里能看到 |
+  | 第 2 次 | Job 48 | patience=5，效果比第 1 次差 | 没有留下文件 |
+  | 第 3 次 | Job 49 | patience=8，test 集调参（后来发现偷看测试集） | `run3_*` |
+  | 第 4 次 | Job 50 | 改成 val 集调参 | `run4_*` |
+  | 第 5 次 | Job 53 | 加 CHECKPOINT_METRIC 开关 + temperature scaling | `run5_*` |
+  | 第 6 次 | Job 56 | 打开 5 折交叉验证诊断 | `run6_*`（含 `run6_kfold_results.json`） |
 
-  `job44_vs_job49_loss_curve.png`、`job44_vs_job49_metrics.png` 是第 1/3 次结果的并排对比图。
-  从**第 7 次**开始用 `run7_xxx` 这套新命名。
+  `run1_vs_run3_loss_curve.png`、`run1_vs_run3_metrics.png` 是第 1/3 次结果的并排对比图。
+  从**第 7 次**开始用 `run7_xxx`，往后连续编号。
