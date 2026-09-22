@@ -116,10 +116,22 @@ patience 更大（8）让模型有更多机会找到更好的一轮。如果还�
 
 ## outputs/ 文件命名规则
 
-从 Job 50 开始，notebook 会自动用 Slurm job 号给每次跑产出的文件打标签（`job{ID}_xxx`），
-在交互式终端跑（没有 job 号）就叫 `job_local_xxx`，不用再手动改名，也不会出现新的一次跑
-把旧结果覆盖掉的问题。规则：
-- `job{N}_loss_curve.png` / `job{N}_metrics_curve.png` / `job{N}_test_metrics.png` / `job{N}_history.json` / `job{N}_model.pt`
-- 早期几次（Job 44/48/49，那时候还没有这套自动命名）是手动改的名字：
-  `job49_loss_curve.png`、`job49_metrics_curve.png`、`job49_history.json`（Job 49 的模型权重文件后来被覆盖，没保留下来）；
-  `job44_vs_job49_loss_curve.png`、`job44_vs_job49_metrics.png` 是两次结果的并排对比图。
+Job 50/53/56 那几次是用 Slurm job 号命名文件（`job{ID}_xxx`）的，后来发现这台集群是所有用户
+共用的，job 号会被别人的任务跳号（比如 53 后面直接跳到 56），跟"我们自己训练了几次"对不上，
+所以从下一次正式跑开始改成自己维护的连续序号：`docs/run_counter.txt` 里存着"下一次该用几号"，
+每次在 Slurm 里跑完自动 +1 写回去，不再依赖 Slurm 自己的计数器。规则：
+- `run{N}_loss_curve.png` / `run{N}_metrics_curve.png` / `run{N}_test_metrics.png` / `run{N}_history.json` / `run{N}_model.pt`
+- 在交互式终端跑（sanity check，没有 Slurm job）统一叫 `run_local_xxx`，不占用正式编号
+- 前 6 次正式训练发生在切换到这套编号之前，对照关系是：
+
+  | 我们自己数的"第几次" | 对应的旧文件名 | 说明 |
+  |---|---|---|
+  | 第 1 次 | `job49_loss_curve.png` 等（当时叫 `loss_curve.png`） | Job 44，无正则化基线 |
+  | 第 2 次 | 没留下单独文件 | Job 48，patience=5，效果比 Job 44 差 |
+  | 第 3 次 | `job49_*` | Job 49，patience=8，test 集调参（后来发现偷看测试集） |
+  | 第 4 次 | `job50_*` | Job 50，改成 val 集调参 |
+  | 第 5 次 | `job53_*` | Job 53，加 CHECKPOINT_METRIC 开关 + temperature scaling |
+  | 第 6 次 | `job56_*` | Job 56，打开 5 折交叉验证诊断 |
+
+  `job44_vs_job49_loss_curve.png`、`job44_vs_job49_metrics.png` 是第 1/3 次结果的并排对比图。
+  从**第 7 次**开始用 `run7_xxx` 这套新命名。
