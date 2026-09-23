@@ -1,0 +1,31 @@
+{
+  "n_folds": 5,
+  "single_model_precision_malignant": 0.7777777777777778,
+  "single_model_recall_malignant": 0.8974358974358975,
+  "single_model_f1_malignant": 0.8333333333333334,
+  "ensemble_precision_malignant": 0.8378378378378378,
+  "ensemble_recall_malignant": 0.7948717948717948,
+  "ensemble_f1_malignant": 0.8157894736842105,
+  "missed_case_check": {
+    "malignant (145).png": {
+      "ensemble_prob_malignant": 0.2853573106229305,
+      "ensemble_pred": "benign",
+      "now_correct": false
+    },
+    "malignant (52).png": {
+      "ensemble_prob_malignant": 0.13187419176101683,
+      "ensemble_pred": "benign",
+      "now_correct": false
+    },
+    "malignant (28).png": {
+      "ensemble_prob_malignant": 0.4443187013268471,
+      "ensemble_pred": "benign",
+      "now_correct": false
+    },
+    "malignant (148).png": {
+      "ensemble_prob_malignant": 0.22894327342510223,
+      "ensemble_pred": "benign",
+      "now_correct": false
+    }
+  }
+}
