@@ -29,20 +29,40 @@ gap≈0.018 的量级：train_loss=0.3606，val_loss=0.3781）。不应该是 Jo
 被判成恶性）——前者可能延误治疗，后者最多是多做一次复查。所以应该把"恶性"当成 positive class 来看
 recall，而不是现在默认的"良性"口径。
 
-**现状：⛔ 未完成。** 所有历史结果的 precision/recall/f1 都还是良性口径，没有单独算过恶性口径的指标。
-需要在评估代码里补一次 `classification_report(final_labels, final_preds, target_names=CLASS_NAMES)`，
-或者显式传 `pos_label=0`（`precision_score(final_labels, final_preds, pos_label=0)` 等，因为
-`malignant` 对应的数字标签是 0）重新算一遍恶性口径的 precision/recall/f1，算出来之后回填进本文档这一节。
+**现状：✅ 已完成。** run11 开始，`MALIGNANT_ID` 改成用 `CLASS_NAMES.index("malignant")` 动态确认
+（不再硬编码假设顺序），并用 `classification_report(final_labels, final_preds, target_names=CLASS_NAMES)`
+把 malignant/benign 两个类别的 precision/recall/f1 分开算、分开存进 `outputs/run{N}_history.json`。
+
+- **run11**（layer3，checkpoint 仍按 F1 挑，只是把评估口径换成恶性）：malignant precision/recall/f1 =
+  0.75 / 0.85 / 0.80；benign 0.93 / 0.88 / 0.90。checkpoint 选中的还是第 5 轮，跟 run8/9/10 完全一样的
+  权重——说明"换评估口径"本身不影响模型，只是之前没把这个数字算出来、汇报出来。
+- **run14**（在 run11 基础上更进一步：CrossEntropyLoss 按 malignant/benign 实际数量反比加 class weight，
+  early stopping/选 checkpoint 也从普通 F1 换成 `fbeta_score(beta=2, pos_label=malignant)`，recall
+  权重是 precision 的 4 倍）：checkpoint 选中的变成第 8 轮，test 集恶性 precision/recall/f1 提升到
+  0.78 / **0.90** / 0.83，良性那边也没有变差（0.95 / 0.89 / 0.92）——不是靠牺牲 precision 换 recall
+  的权衡，是训练方式本身改善了对恶性类别的识别。漏诊数从 6/39 降到 4/39（见
+  `outputs/run14_missed_malignant_cases.png`，剩下 4 个漏诊案例的恶性概率都在 0.25~0.37，是卡在
+  门槛边缘的模糊案例，不是模型离谱判断错）。
+- 额外做了一次**门槛扫描**（不重新训练，只调预测门槛）：run11 的权重把门槛从 0.5 降到 0.25，恶性
+  recall 能拉到 1.0（precision 掉到 0.64，见 `outputs/run13_threshold_sweep.png`）；同样的扫描在
+  run14 权重上做（`outputs/run15_threshold_sweep.png`）反而在高召回区间 precision 更差
+  （recall=1.0 时 precision 只有 0.56，不如 run11 门槛调整后的 0.64）——说明 run14 训练时已经把"廉价
+  的召回率提升"提前拿走了，不能简单叠加"训练时优化 + 门槛调整"两种手段期待双重收益。
 
 ## 3. K-fold 标准差要小：均值高不够，还要"切哪几份都差不多"
 
 理想情况：5 折交叉验证不仅均值要高，标准差也要小（比如 ±0.01 量级），说明不管数据怎么切、模型表现
 都很稳定，不是"运气好切到了一份好切分"。
 
-**现状：⚠️ 部分达到。** layer3 配置（run10）5 折验证集 accuracy 均值 0.9168，但标准差 ±0.0217
-（5 折分别是 0.8942 / 0.9519 / 0.9320 / 0.9029 / 0.9029，最高最低差了近 6 个百分点）；F1 均值
-0.9396，标准差 ±0.0155。均值这块已经不错，但标准差还有改进空间——比如更多的数据增强、更强的正则化，
-或者干脆承认 647 张图这个数据量下、折与折之间几个百分点的波动本来就很难完全消除（见第 6 条）。
+**现状：⚠️ 部分达到，试过一种改法但没用。** layer3 配置（run10，batch_size=16）5 折验证集 accuracy
+均值 0.9168，标准差 ±0.0217（5 折分别是 0.8942 / 0.9519 / 0.9320 / 0.9029 / 0.9029，最高最低差了
+近 6 个百分点）；F1 均值 0.9396，标准差 ±0.0155。
+
+试过把 `BATCH_SIZE` 从 16 改成 32、其他配置不变重新跑一遍 5 折（run12）：结果标准差没有降下来，反而
+略微变差了——accuracy 均值 0.9091（降了）、标准差 ±0.0255（升了）；F1 均值 0.9352、标准差 ±0.0161
+（也是略降/略升）。说明"batch size 越大越稳"这个假设在这个数据量下不成立，标准差还有改进空间，但
+不是靠调 batch size 能解决的，可能得从数据增强、正则化强度，或者干脆承认这是 647 张图这个数据量下
+折间波动的自然下限（见第 6 条）来想办法。
 
 ## 4. 方法论必须干净：test 集只摸一次，checkpoint 完全基于 val
 
