@@ -40,7 +40,7 @@
 | **run15** | 对 run14 权重做同款门槛扫描，跟 run13 对比 | 反直觉：把 recall 推到 100% 时，run14 门槛调整后 precision 只剩 0.56，比 run11 门槛调整的 0.64 更差——训练时优化过的模型，门槛能挤出的"廉价召回率"更少了 | ❌ 负结果（有价值的教训） |
 | **run18** | 用 run14 配置重新跑 5 折，**这次保存每折权重**，5 个模型概率平均做 ensemble | 单模型 precision/recall/f1 0.78/0.90/0.83 → ensemble 0.84/0.79/0.82，**recall 反而变差**；原来 4 个漏诊案例一个都没救回来；5 折标准差也变差（0.9109±0.0381） | ❌ 负结果（有价值的教训） |
 | **run19** | 对 malignant 样本过采样 2 倍（复制行），叠加 run14 配置 | 全面变差：accuracy 0.8923→0.8615，malignant P/R/F1 0.78/0.90/0.83→0.72/0.87/0.79；根因是过采样把两类数量拉平，动态 class weight 公式自动退回接近 1:1，抵消了 run14 里"偏向恶性"的权重效果 | ❌ 负结果（找到明确原因） |
-| **run20** | `StratifiedShuffleSplit(test_size=0.3)` 把 5-fold 诊断的 val 比例从 20% 扩大到 30%，其余同 run14（class weight + F-beta(2) + layer3） | 进行中，待补 | ⏳ 进行中 |
+| **run20** | `StratifiedShuffleSplit(test_size=0.3)` 把 5-fold 诊断的 val 比例从 20% 扩大到 30%（5 次划分允许重叠），其余同 run18（class weight + F-beta(2) + layer3） | accuracy 标准差 ±0.0381（run18）→ **±0.0181**，比 run10 的 ±0.0217 还小——扩大 val 比例这个方向有效，反驳了"已到数据量天花板"的猜测；但 val 比例和切分是否允许重叠这两个变量同时变了，效果不能 100% 单独归因到"val 变大"。ensemble 也比 run18 更好：recall 保持 0.8974（不像 run18 ensemble 掉到 0.79），多救回 1 个漏诊案例 | ✅ 正面（意外结果，反驳了预期） |
 
 ## 怎么用这份索引
 
