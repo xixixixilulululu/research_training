@@ -1,0 +1,58 @@
+{
+  "source_model": "run11_model.pt (best_epoch=5, layer3, checkpoint selected by malignant F1)",
+  "malignant_id": 0,
+  "n_test": 130,
+  "thresholds": [
+    0.5,
+    0.45,
+    0.4,
+    0.35,
+    0.3,
+    0.25,
+    0.2
+  ],
+  "results": [
+    {
+      "threshold": 0.5,
+      "precision_malignant": 0.75,
+      "recall_malignant": 0.8461538461538461,
+      "f1_malignant": 0.7951807228915663
+    },
+    {
+      "threshold": 0.45,
+      "precision_malignant": 0.6938775510204082,
+      "recall_malignant": 0.8717948717948718,
+      "f1_malignant": 0.7727272727272727
+    },
+    {
+      "threshold": 0.4,
+      "precision_malignant": 0.660377358490566,
+      "recall_malignant": 0.8974358974358975,
+      "f1_malignant": 0.7608695652173914
+    },
+    {
+      "threshold": 0.35,
+      "precision_malignant": 0.6666666666666666,
+      "recall_malignant": 0.9230769230769231,
+      "f1_malignant": 0.7741935483870968
+    },
+    {
+      "threshold": 0.3,
+      "precision_malignant": 0.6607142857142857,
+      "recall_malignant": 0.9487179487179487,
+      "f1_malignant": 0.7789473684210526
+    },
+    {
+      "threshold": 0.25,
+      "precision_malignant": 0.639344262295082,
+      "recall_malignant": 1.0,
+      "f1_malignant": 0.78
+    },
+    {
+      "threshold": 0.2,
+      "precision_malignant": 0.609375,
+      "recall_malignant": 1.0,
+      "f1_malignant": 0.7572815533980582
+    }
+  ]
+}
