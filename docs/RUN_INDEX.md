@@ -1,0 +1,44 @@
+# 实验索引（Run Index）
+
+这份文档回答"每一次实验(run)到底是为了解决什么问题"，按**解决目的**分组，不按时间顺序简单罗列。
+跟 `IDEAL_RESULT.md`（结果质量的评判标准）、`TASK_CHECKLIST.md`（对照老师 PDF 的任务完成度）不是一回事：
+这份是"一眼看懂每次实验想解决哪个问题、有没有解决"的索引，不移动/不重命名任何现有文件，纯粹是导航用的。
+
+**结果类型图例**：
+- ✅ **正面结果** —— 达到了预期目的，后续以此为基础
+- 🛠 **方法论修复** —— 不是"效果变好"，是修掉一个会导致数字不可信的缺陷
+- ❌ **负结果（有价值的教训）** —— 假设没成立，但排除了一个方向，为后续决策提供依据
+- ⏳ **进行中** —— 还没跑完
+
+## 第一阶段：发现并解决过拟合 / 方法论问题
+
+| Run | 改动 | 关键结果 | 类型 |
+|---|---|---|---|
+| **run1**（Job44） | 无正则化，直接微调整个 ResNet50，20 epoch 跑满，保存最后一轮权重 | Test Accuracy 0.9077 / Precision 0.9247 / Recall 0.9451 / F1 0.9348，但 train loss→0.007、val/test loss 停在 0.3~0.5 震荡——**典型过拟合**，且从未做过交叉验证 | 问题发现 |
+| **run3**（Job49） | 加数据增强 + AdamW weight decay + Dropout + early stopping，但 early stopping **直接看 test F1** | 四项指标全面超过 run1（Accuracy 0.9385），但训练阶段已经在拿测试集调参，"变好"的结论不可信 | ❌ 方法论缺陷 |
+| **run4**（Job50） | 修复：train.xlsx 517 条分层切出 train_sub(413)/val(104)，early stopping 只看 **val**，test 130 条全程不参与训练调参 | best val_f1(良性口径)=0.9241，测试集不再被污染，之后报告的 test 指标才是真实泛化表现 | 🛠 方法论修复 |
+| **run6**（Job56） | 在 run4 配置（layer4 冻结）基础上，打开 5 折交叉验证诊断 | 5 折 val accuracy 均值 0.9014±0.0184，F1 均值 0.9281±0.0129 —— 第一次建立"稳不稳"的基线 | ✅ 正面 |
+| **run7** | 只改 `EARLY_STOPPING_PATIENCE` 8→3（其余同 run6，仍是 layer4） | 提前在第 8 轮停止，没有比 patience=8 时更好——patience 太小容易被单个 epoch 的噪声误判提前停止，促使下一步转向调冻结策略而不是继续调 patience | ❌ 负结果 |
+| **run8** | 把 backbone 冻结策略从 layer4 换成 **layer3**（解冻 layer3+layer4+fc，可训练参数更多），patience 恢复到 8 | 相比 layer4 配置（run5~7），**layer3 效果最好**，验证集 F1 在第 5 轮达到峰值 0.9412 | ✅ 正面（关键改进） |
+| **run9** | 强制 `EARLY_STOPPING_PATIENCE=20`，跑满全部 20 epoch 不提前停，专门检查第 14~20 轮 | 后面几轮都没超过第 5 轮的 0.9412，**确认第 5 轮就是真正的最优点**，不是提前停止造成的误判 | ✅ 正面（验证结论） |
+| **run10** | 在 layer3 配置上打开 5 折交叉验证 | 5 折 val accuracy 均值 **0.9168±0.0217**，F1 均值 0.9396±0.0155——证明单次 test accuracy（0.8692）偏低只是抽样波动，layer3 配置的真实水平是可信的 | ✅ 正面（建立可信基线） |
+
+## 第二阶段：发现并解决"指标算错类别 / 恶性漏诊"问题
+
+| Run | 改动 | 关键结果 | 类型 |
+|---|---|---|---|
+| **run11** | 用 `CLASS_NAMES.index("malignant")` 动态确认恶性对应的标签 id（不硬编码），重新按**恶性口径**算 precision/recall/f1；checkpoint 选择仍用普通 F1（良性口径） | malignant precision/recall/f1 = 0.75/0.85/0.80，benign 0.93/0.88/0.90；选中的还是第 5 轮——证明"换评估口径"本身不影响模型，只是之前没把这个数字算出来 | 🛠 方法论修复 |
+| **run12** | `BATCH_SIZE` 16→32，其余同 run10，重新跑 5 折 | acc 均值 0.9091±0.0255（比 run10 的 0.9168±0.0217 更差），F1 均值 0.9352±0.0161——batch size 越大越稳的假设不成立 | ❌ 负结果 |
+| **run13** | 对 run11 权重做门槛扫描（不重新训练），0.5→0.2 逐档测试 | 门槛降到 0.25，恶性 recall 从 0.85 拉到 **1.0**，precision 从 0.75 掉到 0.64 —— 提供了一个不用重训练就能调权衡的工具 | ✅ 正面 |
+| **run14** | CrossEntropyLoss 按 malignant/benign 实际数量动态算 class weight（1.51/0.75）；checkpoint 选择换成 `fbeta_score(beta=2, pos_label=malignant)` | 选中第 8 轮（不再是第 5 轮）；malignant precision/recall/f1 = **0.78/0.90/0.83**，benign 同时也变好（0.95/0.89/0.92）——不是精度换召回的权衡，是训练方式本身改善了；漏诊从 6/39 降到 4/39 | ✅ 正面（目前最佳单模型） |
+| **run15** | 对 run14 权重做同款门槛扫描，跟 run13 对比 | 反直觉：把 recall 推到 100% 时，run14 门槛调整后 precision 只剩 0.56，比 run11 门槛调整的 0.64 更差——训练时优化过的模型，门槛能挤出的"廉价召回率"更少了 | ❌ 负结果（有价值的教训） |
+| **run18** | 用 run14 配置重新跑 5 折，**这次保存每折权重**，5 个模型概率平均做 ensemble | 单模型 precision/recall/f1 0.78/0.90/0.83 → ensemble 0.84/0.79/0.82，**recall 反而变差**；原来 4 个漏诊案例一个都没救回来；5 折标准差也变差（0.9109±0.0381） | ❌ 负结果（有价值的教训） |
+| **run19** | 对 malignant 样本过采样 2 倍（复制行），叠加 run14 配置 | 全面变差：accuracy 0.8923→0.8615，malignant P/R/F1 0.78/0.90/0.83→0.72/0.87/0.79；根因是过采样把两类数量拉平，动态 class weight 公式自动退回接近 1:1，抵消了 run14 里"偏向恶性"的权重效果 | ❌ 负结果（找到明确原因） |
+| **run20** | `StratifiedShuffleSplit(test_size=0.3)` 把 5-fold 诊断的 val 比例从 20% 扩大到 30%，其余同 run14（class weight + F-beta(2) + layer3） | 进行中，待补 | ⏳ 进行中 |
+
+## 怎么用这份索引
+
+- 想知道"现在最好的单模型是哪个" → run14（`outputs/run14_model.pt`）。
+- 想要一个不重新训练就能提高恶性召回率的办法 → run13/run15 的门槛扫描。
+- 想知道"哪些路子已经试过、别再浪费时间" → run12（batch size）、run18（ensemble）、run19（过采样+动态权重）都已确认无效，原因写在各自那一行和对应的 commit message 里。
+- 每一行的详细数字来自对应的 `outputs/run{N}_history.json` / `run{N}_kfold_results.json` / `run{N}_threshold_sweep.json`，以及同名的 git commit message。

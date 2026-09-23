@@ -18,6 +18,7 @@
 - `docs/` — 概念/计划类文档，跟代码分开放：
   - `TASK_CHECKLIST.md` — 对照《Research Training Instructions (1)》逐条核对的完成情况清单
   - `IDEAL_RESULT.md` — 这个实验"理想结果应该长什么样"的标准，及每条现在做到了没有
+  - [`RUN_INDEX.md`](docs/RUN_INDEX.md) — run1~run20 按"解决的目的"分组的索引，一眼看懂每次实验想解决哪个问题
   - `STUDY_PLAN.md` — 7 天学习计划
   - `Research_Training_Instructions_notes.pdf`、`CV_Slides_Day20_notes.pdf` — 课件/说明笔记（衍生自老师材料，不进公开仓库，只在本地）
 
