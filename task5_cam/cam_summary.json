@@ -1,0 +1,160 @@
+{
+  "overall": [
+    {
+      "model": "ResNet50",
+      "n": 130,
+      "lesion_area": 0.0969,
+      "lesion_energy": 0.2738,
+      "peak_in_lesion": 0.3846,
+      "border_energy": 0.0465,
+      "hot_area": 0.0598
+    },
+    {
+      "model": "VGG16",
+      "n": 130,
+      "lesion_area": 0.0969,
+      "lesion_energy": 0.1914,
+      "peak_in_lesion": 0.3538,
+      "border_energy": 0.2605,
+      "hot_area": 0.0703
+    },
+    {
+      "model": "DenseNet121",
+      "n": 130,
+      "lesion_area": 0.0969,
+      "lesion_energy": 0.1954,
+      "peak_in_lesion": 0.5077,
+      "border_energy": 0.2081,
+      "hot_area": 0.2125
+    }
+  ],
+  "by_correct": [
+    {
+      "model": "ResNet50",
+      "correct": true,
+      "n": 117,
+      "lesion_area": 0.0923,
+      "lesion_energy": 0.2704,
+      "peak_in_lesion": 0.3846,
+      "border_energy": 0.0422,
+      "hot_area": 0.0584
+    },
+    {
+      "model": "ResNet50",
+      "correct": false,
+      "n": 13,
+      "lesion_area": 0.1381,
+      "lesion_energy": 0.3043,
+      "peak_in_lesion": 0.3846,
+      "border_energy": 0.0855,
+      "hot_area": 0.0728
+    },
+    {
+      "model": "VGG16",
+      "correct": true,
+      "n": 112,
+      "lesion_area": 0.0909,
+      "lesion_energy": 0.1985,
+      "peak_in_lesion": 0.3661,
+      "border_energy": 0.2571,
+      "hot_area": 0.0691
+    },
+    {
+      "model": "VGG16",
+      "correct": false,
+      "n": 18,
+      "lesion_area": 0.1342,
+      "lesion_energy": 0.1472,
+      "peak_in_lesion": 0.2778,
+      "border_energy": 0.2819,
+      "hot_area": 0.0777
+    },
+    {
+      "model": "DenseNet121",
+      "correct": true,
+      "n": 117,
+      "lesion_area": 0.0925,
+      "lesion_energy": 0.1947,
+      "peak_in_lesion": 0.5043,
+      "border_energy": 0.2021,
+      "hot_area": 0.2132
+    },
+    {
+      "model": "DenseNet121",
+      "correct": false,
+      "n": 13,
+      "lesion_area": 0.1359,
+      "lesion_energy": 0.2013,
+      "peak_in_lesion": 0.5385,
+      "border_energy": 0.2623,
+      "hot_area": 0.2063
+    }
+  ],
+  "by_true_class": [
+    {
+      "model": "ResNet50",
+      "true": "malignant",
+      "n": 39,
+      "lesion_area": 0.1551,
+      "lesion_energy": 0.4185,
+      "peak_in_lesion": 0.5897,
+      "border_energy": 0.0659,
+      "hot_area": 0.0853
+    },
+    {
+      "model": "ResNet50",
+      "true": "benign",
+      "n": 91,
+      "lesion_area": 0.0719,
+      "lesion_energy": 0.2118,
+      "peak_in_lesion": 0.2967,
+      "border_energy": 0.0382,
+      "hot_area": 0.0489
+    },
+    {
+      "model": "VGG16",
+      "true": "malignant",
+      "n": 39,
+      "lesion_area": 0.1551,
+      "lesion_energy": 0.3019,
+      "peak_in_lesion": 0.5385,
+      "border_energy": 0.2162,
+      "hot_area": 0.0967
+    },
+    {
+      "model": "VGG16",
+      "true": "benign",
+      "n": 91,
+      "lesion_area": 0.0719,
+      "lesion_energy": 0.1441,
+      "peak_in_lesion": 0.2747,
+      "border_energy": 0.2796,
+      "hot_area": 0.059
+    },
+    {
+      "model": "DenseNet121",
+      "true": "malignant",
+      "n": 39,
+      "lesion_area": 0.1551,
+      "lesion_energy": 0.2758,
+      "peak_in_lesion": 0.5897,
+      "border_energy": 0.2053,
+      "hot_area": 0.2118
+    },
+    {
+      "model": "DenseNet121",
+      "true": "benign",
+      "n": 91,
+      "lesion_area": 0.0719,
+      "lesion_energy": 0.1609,
+      "peak_in_lesion": 0.4725,
+      "border_energy": 0.2093,
+      "hot_area": 0.2128
+    }
+  ],
+  "pairwise_cam_correlation": {
+    "ResNet50 vs VGG16": 0.4324580033360039,
+    "ResNet50 vs DenseNet121": 0.49772445231074713,
+    "VGG16 vs DenseNet121": 0.3956623140149127
+  }
+}
