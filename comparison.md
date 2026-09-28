@@ -65,8 +65,13 @@ fpr/tpr values these observations are drawn from).
   and the spread between best and worst is modest (≤0.038 accuracy, ≤0.019 AUC).
 - **DenseNet121 has the highest AUC (0.9301) and the highest macro precision (0.9021),
   but the lowest macro recall (0.8553)** of the three — its confident predictions are the
-  most trustworthy (see the ROC curve's low-false-positive-rate region), but at the
-  default 0.5 threshold it is more conservative about calling "malignant."
+  most trustworthy (see the ROC curve's low-false-positive-rate region). The low recall is
+  **not** a simple case of threshold conservatism, though. Of its 10 missed malignant cases
+  (`task5_cam/densenet121/cam_stats.csv`, true = malignant, pred = benign), 9 have
+  `prob_malignant` well below 0.5 (0.0003–0.2693; 4 of them below 0.05) and only 1 sits
+  near the threshold (0.4877). Most misses are confident errors in the wrong direction,
+  not borderline calls. Lowering the threshold would recover at most 2–3 of them (2 at
+  0.25, 3 at 0.20), and would turn 5–8 more benign test images into false positives.
 - **ResNet50 baseline is the most balanced model** (precision ≈ recall ≈ 0.88) and ties
   DenseNet121 for the highest raw accuracy (0.90). Its ROC curve is initially weaker than
   DenseNet121's at very low false-positive rates but overtakes it through the middle of
