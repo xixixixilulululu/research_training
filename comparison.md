@@ -72,16 +72,18 @@ fpr/tpr values these observations are drawn from).
   near the threshold (0.4877). Most misses are confident errors in the wrong direction,
   not borderline calls. Lowering the threshold would recover at most 2–3 of them (2 at
   0.25, 3 at 0.20), and would turn 5–8 more benign test images into false positives.
-- A separate concern from raw accuracy: DenseNet121's CAMs are the least trustworthy of
-  the three, despite tying ResNet50 on accuracy (0.90). Its hot_area (0.212) is roughly
-  3.5x wider than ResNet50's (0.060), and while its peak_in_lesion is the highest of the
-  three (0.508), this reflects broad, diffuse blobs that happen to cover the lesion rather
-  than precise localization. The clearest case is #129: DenseNet121 predicts correctly, but
-  its CAM sits entirely on an unrelated dark region to the left of the lesion, with zero
-  overlap — a correct answer for the wrong reason. ResNet50, by contrast, combines the
-  highest lesion_energy (0.274) with the lowest border_energy (0.047) and a compact
-  hot_area, making it the most consistently trustworthy of the three despite not having the
-  single highest AUC.
+- The three models show distinct CAM failure modes rather than a single ranking. VGG16 is
+  the least reliable at basic localization: it completely misses the lesion on 35/130
+  images (vs. 9 for DenseNet121 and 12 for ResNet50) and its CAM sits mostly on the frame
+  border on 12/130 images (vs. 0 for the other two). DenseNet121 rarely misses the lesion's
+  general region — it has the fewest complete misses (9/130) and the highest
+  peak-in-lesion rate (0.508) — but its attention is the least precise: hot_area (0.212) is
+  roughly 3x ResNet50's (0.060) or VGG16's (0.070). Case #129 (malignant (131), correctly
+  predicted at p=0.65) illustrates the risk: its CAM has zero overlap with the annotated
+  lesion despite the broad blob nominally covering that area. ResNet50 is the most
+  consistently precise of the three, combining the highest lesion_energy (0.274), the
+  lowest border_energy (0.047), and the most compact hot_area, without the trade-offs seen
+  in the other two.
 - **ResNet50 baseline is the most balanced model** (precision ≈ recall ≈ 0.88) and ties
   DenseNet121 for the highest raw accuracy (0.90). Its ROC curve is initially weaker than
   DenseNet121's at very low false-positive rates but overtakes it through the middle of

@@ -227,8 +227,8 @@ Yes, and they are consistent across the 130 images.
   - its average map is a broad upper-central blob, the brightest of the three;
   - this broadness is why its peak_in_lesion is the highest while its lesion_energy is
     not;
-  - it also occasionally locks onto an unrelated dark region with full confidence
-    (#129, malignant (45)).
+  - it also occasionally locks onto an unrelated dark region at p=0.65
+    (#129, malignant (131)).
 
 The two 7×7 models agree with each other more (map correlation 0.50) than either agrees
 with VGG16 (0.43 and 0.40).
