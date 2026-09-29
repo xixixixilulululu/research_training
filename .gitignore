@@ -7,3 +7,6 @@ __pycache__/
 # Course/instructor material derivatives — not redistributed in a public repo
 docs/Research_Training_Instructions_notes.pdf
 docs/CV_Slides_Day20_notes.pdf
+
+# Personal Chinese reading copies of repo docs — local only, not part of the submission
+*_zh_CN.md
