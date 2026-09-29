@@ -84,6 +84,18 @@ fpr/tpr values these observations are drawn from).
   consistently precise of the three, combining the highest lesion_energy (0.274), the
   lowest border_energy (0.047), and the most compact hot_area, without the trade-offs seen
   in the other two.
+
+  DenseNet121's edge on complete misses (9/130 vs. ResNet50's 12/130) does not mean better
+  overall localization. The miss criterion favors a wide net: a large hot_area more easily
+  grazes the lesion by chance, making a diffuse CAM hard to score as a "complete miss"
+  even when it is imprecise. The two models also miss different kinds of images —
+  ResNet50's 12 misses are small lesions (median lesion_area 0.040 vs. 0.057 overall),
+  consistent with a compact CAM landing just beside a small target, while DenseNet121's 9
+  misses are large lesions (median 0.107), meaning it fails to cover targets that should
+  be easy to hit. And on lesion_energy itself, the direct per-image measure of
+  localization accuracy, ResNet50 is higher on 96/130 images, reaching 3.5x chance at the
+  median vs. DenseNet121's 2.6x — a 3-image edge on one binary count does not outweigh
+  this broader advantage.
 - **ResNet50 baseline is the most balanced model** (precision ≈ recall ≈ 0.88) and ties
   DenseNet121 for the highest raw accuracy (0.90). Its ROC curve is initially weaker than
   DenseNet121's at very low false-positive rates but overtakes it through the middle of
