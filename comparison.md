@@ -79,8 +79,8 @@ fpr/tpr values these observations are drawn from).
   general region — it has the fewest complete misses (9/130) and the highest
   peak-in-lesion rate (0.508) — but its attention is the least precise: hot_area (0.212) is
   roughly 3x ResNet50's (0.060) or VGG16's (0.070). Case #129 (malignant (131), correctly
-  predicted at p=0.65) illustrates the risk: its CAM has zero overlap with the annotated
-  lesion despite the broad blob nominally covering that area. ResNet50 is the most
+  predicted at p=0.65) illustrates the risk: its broad blob sits entirely on an unrelated
+  dark region to the left of the lesion, with zero overlap. ResNet50 is the most
   consistently precise of the three, combining the highest lesion_energy (0.274), the
   lowest border_energy (0.047), and the most compact hot_area, without the trade-offs seen
   in the other two.
