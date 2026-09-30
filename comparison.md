@@ -72,6 +72,25 @@ fpr/tpr values these observations are drawn from).
   near the threshold (0.4877). Most misses are confident errors in the wrong direction,
   not borderline calls. Lowering the threshold would recover at most 2–3 of them (2 at
   0.25, 3 at 0.20), and would turn 5–8 more benign test images into false positives.
+- **ResNet50 baseline is the most balanced model** (precision ≈ recall ≈ 0.88) and ties
+  DenseNet121 for the highest raw accuracy (0.90). Its ROC curve is initially weaker than
+  DenseNet121's at very low false-positive rates but overtakes it through the middle of
+  the curve.
+- **VGG16 is the weakest of the three on every metric here** (lowest accuracy, lowest
+  macro F1, lowest AUC) — but still clearly functional (F1 0.8352, AUC 0.9112, far above
+  the 0.5 random-guess baseline), not a failed run.
+- **Architecture matters less than training recipe, at least on this dataset.** Task 1's
+  exploration (`docs/RUN_INDEX.md`) saw much larger swings from changing the training
+  method alone on a single architecture (e.g. run1's overfit baseline vs. later
+  regularized/class-weighted versions) than the spread seen here from swapping
+  architectures under one fixed, simple recipe. That suggests most of the earlier gains
+  in Task 1 came from *how* the model was trained, not from architecture choice per se.
+- **Caveat on sample size**: the test set has only 130 images (39 malignant). A few
+  percentage points of difference between models — e.g. DenseNet121's AUC edge over
+  ResNet50 (0.9301 vs 0.9265, a 0.0036 gap) — is within plausible single-split sampling
+  noise. Unlike Task 1's ResNet (validated with 5-fold cross-validation in `run10`), these
+  Task 2 numbers come from a single train/val/test split, so this ranking should be read
+  as indicative, not a certified ordering.
 - The three models show distinct CAM failure modes rather than a single ranking. VGG16 is
   the least reliable at basic localization: it completely misses the lesion on 35/130
   images (vs. 9 for DenseNet121 and 12 for ResNet50) and its CAM sits mostly on the frame
@@ -96,25 +115,6 @@ fpr/tpr values these observations are drawn from).
   localization accuracy, ResNet50 is higher on 96/130 images, reaching 3.5x chance at the
   median vs. DenseNet121's 2.6x — a 3-image edge on one binary count does not outweigh
   this broader advantage.
-- **ResNet50 baseline is the most balanced model** (precision ≈ recall ≈ 0.88) and ties
-  DenseNet121 for the highest raw accuracy (0.90). Its ROC curve is initially weaker than
-  DenseNet121's at very low false-positive rates but overtakes it through the middle of
-  the curve.
-- **VGG16 is the weakest of the three on every metric here** (lowest accuracy, lowest
-  macro F1, lowest AUC) — but still clearly functional (F1 0.8352, AUC 0.9112, far above
-  the 0.5 random-guess baseline), not a failed run.
-- **Architecture matters less than training recipe, at least on this dataset.** Task 1's
-  exploration (`docs/RUN_INDEX.md`) saw much larger swings from changing the training
-  method alone on a single architecture (e.g. run1's overfit baseline vs. later
-  regularized/class-weighted versions) than the spread seen here from swapping
-  architectures under one fixed, simple recipe. That suggests most of the earlier gains
-  in Task 1 came from *how* the model was trained, not from architecture choice per se.
-- **Caveat on sample size**: the test set has only 130 images (39 malignant). A few
-  percentage points of difference between models — e.g. DenseNet121's AUC edge over
-  ResNet50 (0.9301 vs 0.9265, a 0.0036 gap) — is within plausible single-split sampling
-  noise. Unlike Task 1's ResNet (validated with 5-fold cross-validation in `run10`), these
-  Task 2 numbers come from a single train/val/test split, so this ranking should be read
-  as indicative, not a certified ordering.
 
 ## Where to look for more detail
 
