@@ -1,73 +1,80 @@
-# 任务完成情况对照表
+# Task completion checklist
 
-对照《Research Training Instructions (1)》逐条核对，✅ = 已完成，⛔ = 未完成（且我没法替你做）。
+Checked item by item against "Research Training Instructions (1)" (sections 1–3) and "Research Training
+Instructions (3)" (section 4). ✅ = done, ⛔ = not done (and not something I can do for you).
 
-## 一、通用建议（General tips）
+## 1. General tips
 
-| PDF 要求 | 状态 | 备注 |
+| PDF requirement | Status | Notes |
 |---|---|---|
-| 判断 GPU server 类型，普通 GPU 用 `nohup`，HPC（如 DGX_Spark）用 Slurm | ✅ | 我们在 DGX Spark 上，全程用 Slurm 提交（`kean/train.slurm`、`run_task1.slurm`） |
-| VPN 每 30~60 分钟会断，程序要不受影响 | ✅ | Slurm job 跑在计算节点上，跟 VPN/终端窗口无关，断了也没事 |
-| 下载 BUSI 数据集并上传到服务器 | ✅ | 已上传到 `~/datasets/BUSI/` |
-| 建一个 `datasets` 文件夹和一个 `projects` 文件夹分开放 | ✅ | `~/datasets/BUSI/`，`~/projects/research_training/` |
+| Determine the GPU server type: `nohup` on a normal GPU server, Slurm on HPC (e.g. DGX_Spark) | ✅ | We are on DGX Spark and submit everything through Slurm (`kean/train.slurm`, `run_task1.slurm`) |
+| The VPN drops every 30–60 minutes; programs must not be affected | ✅ | Slurm jobs run on compute nodes, independent of the VPN/terminal window |
+| Download the BUSI dataset and upload it to the server | ✅ | Uploaded to `~/datasets/BUSI/` |
+| Keep a separate `datasets` folder and `projects` folder | ✅ | `~/datasets/BUSI/`, `~/projects/research_training/` |
 
-## 二、开始训练前的准备
+## 2. Preparation before training
 
-| PDF 要求 | 状态 | 备注 |
+| PDF requirement | Status | Notes |
 |---|---|---|
-| 用 AI chatbot 理解：.py vs .ipynb、Deep Learning、CV/分类/分割、data & label、train/val/test 划分 | ⛔ **未完成** | PDF 明确写的是"请你自己用 AI chatbot 学懂"，这是你的学习任务，我没法替你"理解" |
-| 理解 CNN 相关概念：convolution、pooling、batch norm、activation function、FC layer | ⛔ **未完成** | 同上，需要你自己去问 AI 学 |
-| 理解训练相关概念：forward/backward propagation、epoch、loss function、optimizer、learning rate、batch size、overfitting/underfitting | ⛔ **未完成** | 同上；不过第 1 次训练的实际结果里已经出现了一个真实的 overfitting 例子（见 README「跑过的记录」），可以拿它做例子去理解 |
-| 看老师给的 CV 课程 slides | ⛔ **未完成** | 我这边看不到你有没有看，需要你自己确认 |
-| 建 `research_training` 文件夹 | ✅ | `~/projects/research_training/` |
-| 建 `Test.ipynb`，写一个简单 Python 程序并运行 | ✅ | 已创建并执行成功（见 `Test.ipynb`） |
-| 学会写有文字说明 cell + 代码 cell 的、组织良好的 notebook | ✅（代码层面） | `Test.ipynb`、`BUSI_Classification.ipynb` 都是这个结构；但"学会"本身要靠你自己消化 |
+| Use an AI chatbot to understand: .py vs .ipynb, deep learning, CV/classification/segmentation, data & label, train/val/test split | ⛔ **not done** | The PDF explicitly says "learn it yourself with an AI chatbot" — this is your learning task, I cannot "understand" it for you |
+| Understand CNN concepts: convolution, pooling, batch norm, activation function, FC layer | ⛔ **not done** | Same as above, ask the AI and learn it yourself |
+| Understand training concepts: forward/backward propagation, epoch, loss function, optimizer, learning rate, batch size, overfitting/underfitting | ⛔ **not done** | Same as above; the first training run already shows a real overfitting example (README "Runs so far") you can use |
+| Read the instructor's CV course slides | ⛔ **not done** | I cannot see whether you have read them; please confirm yourself |
+| Create the `research_training` folder | ✅ | `~/projects/research_training/` |
+| Create `Test.ipynb`, write and run a simple Python program | ✅ | Created and executed successfully (see `Test.ipynb`) |
+| Learn to write well-organised notebooks with text cells + code cells | ✅ (code side) | `Test.ipynb` and `BUSI_Classification.ipynb` follow this structure; "learning" it is up to you |
 
-## 三、Training Task 1：BUSI 图像分类
+## 3. Training Task 1: BUSI image classification
 
-| PDF 要求 | 状态 | 备注 |
+| PDF requirement | Status | Notes |
 |---|---|---|
-| 用 AI agent 帮忙写代码、注释、结果文档、分析 | ✅ | 就是我们做的这件事 |
-| 用 ResNet50 做良性/恶性二分类，写成 notebook | ✅ | `BUSI_Classification.ipynb` |
-| 输入图像 resize 到 224×224 | ✅ | |
-| 用两个 xlsx 文件划分训练/测试集，训练集上训练、测试集上评估 | ✅ | 517 训练 / 130 测试，无重复；最新一版又从 517 条训练集里按分层抽样切出 train_sub(413)/val(104)，早停/选模型只看 val，test 130 条全程不参与训练调参，避免"偷看测试集" |
-| 加载 ImageNet 预训练权重 | ✅ | `ResNet50_Weights.IMAGENET1K_V2` |
-| 计算 accuracy、recall、F1 等标准分类指标 | ✅ | 结果：Accuracy 0.9077 / Precision 0.9247 / Recall 0.9451 / F1 0.9348 |
-| 画每个 epoch 的 train/test loss 曲线 | ✅ | `outputs/run3_loss_curve.png`（第 1/3 次基线，train vs test）；从第 4 次开始逐 epoch 画的是 train vs **val**（`outputs/run{N}_loss_curve.png`），test 只在训练全部结束后单独评估一次（`outputs/run{N}_test_metrics.png`），避免逐 epoch 曲线里混进 test 数据 |
-| **观察** loss 曲线，理解 underfitting/overfitting，据此判断合适的训练轮数 | ⛔ **未完成** | 图已经画出来了，而且已经出现了明显的过拟合信号（train loss→0.007，test loss 却在 0.3~0.5 波动），但"观察 + 理解 + 判断"这一步是 PDF 明确要求你自己做的，我不能替你下结论 |
-| 测试集上逐张显示图片 + 真实标签 + 预测标签 | ✅ | notebook 第 11 节，预测错的图会标红 |
-| 每个代码 cell 前面有文字说明，代码有必要注释 | ✅ | |
-| **借助 AI，理解每一行代码和背后的知识** | ⛔ **未完成** | PDF 原话是"with the help of AI, understand"——这是要你自己去理解，不是我把代码跑出来就算数 |
+| Use an AI agent to help write code, comments, result documents and analysis | ✅ | That is what we did |
+| Benign/malignant binary classification with ResNet50, written as a notebook | ✅ | `BUSI_Classification.ipynb` |
+| Resize input images to 224×224 | ✅ | |
+| Split train/test with the two xlsx files, train on train, evaluate on test | ✅ | 517 train / 130 test, no overlap; the latest version also splits the 517 training samples (stratified) into train_sub (413) / val (104); early stopping / model selection only look at val, and the 130 test samples are never used for tuning, avoiding "peeking at the test set" |
+| Load ImageNet-pretrained weights | ✅ | `ResNet50_Weights.IMAGENET1K_V2` |
+| Compute standard classification metrics: accuracy, recall, F1, ... | ✅ | Results: Accuracy 0.9077 / Precision 0.9247 / Recall 0.9451 / F1 0.9348 |
+| Plot train/test loss per epoch | ✅ | `outputs/run3_loss_curve.png` (runs 1/3, train vs test); from run 4 on the per-epoch curves are train vs **val** (`outputs/run{N}_loss_curve.png`) and test is evaluated once after training (`outputs/run{N}_test_metrics.png`), so no test data enters the per-epoch curves |
+| **Observe** the loss curves, understand underfitting/overfitting, decide on a suitable number of epochs | ⛔ **not done** | The plots exist and show a clear overfitting signal (train loss→0.007 while test loss fluctuates between 0.3 and 0.5), but "observe + understand + decide" is explicitly your task in the PDF; I cannot draw the conclusion for you |
+| Show every test image with true and predicted label | ✅ | Notebook section 11; wrong predictions are marked in red |
+| Text description before every code cell, necessary comments in the code | ✅ | |
+| **With the help of AI, understand every line of code and the knowledge behind it** | ⛔ **not done** | The PDF says "with the help of AI, understand" — you need to understand it yourself; running the code does not count |
 
-## 四、Training Task 6–8：BUSI 图像分割（《Research Training Instructions (3)》）
+## 4. Training Task 6–8: BUSI image segmentation ("Research Training Instructions (3)")
 
-| 要求 | 状态 | 备注 |
+| Requirement | Status | Notes |
 |---|---|---|
-| 建三个子文件夹，每个一个 notebook + 一个 slurm | ✅ | `task6_unet/`、`task6_nnunet/`、`task6_deeplabv3plus/` |
-| 用 train.xlsx / test.xlsx 划分，不重新随机划分 | ✅ | 517 / 130，代码里断言两边不重叠 |
-| 检查 mask 命名和对应关系，多 mask 要合并 | ✅ | 文件名与原图完全相同、每张图一个 mask；仍保留 `_mask*` 的 OR 合并逻辑，并在全数据上核对过 |
-| 输出肿瘤区域的二值 mask | ✅ | 每个文件夹 `predictions/*.png`，原图尺寸 |
-| nnU-Net：数据格式转换（目录结构 + dataset.json）、训练、预测命令 | ✅ | notebook 第 5–11 节 |
-| 测试集上算 Dice、IoU、HD95，均值 + 逐图 `per_image_metrics.csv`，三个模型顺序一致 | ✅ | Task 8 notebook 再次断言了顺序一致 |
-| 预测为空时 HD95 的统一规则，写清楚并打印空预测数量 | ✅ | HD95 = 原图对角线；空预测 U-Net 5 / nnU-Net 1 / DeepLabV3+ 0 |
-| notebook 结尾逐张显示 原图 / 真实 mask / 预测 mask / 叠加图 | ✅ | 130 张全部显示 |
-| 模型权重和预测 mask 存在各自文件夹 | ✅ | `outputs/*.pt`；nnU-Net 在 `nnUNet_results/.../checkpoint_final.pth` |
-| 每个代码单元格前有 Markdown 说明，代码有注释 | ✅ | |
-| 公平比较：统一输入尺寸、预处理、种子、batch、优化器、学习率、epoch、增强；开头集中的配置单元格 | ✅ | 三个 notebook 共享超参数块逐字一致；差异（DeepLabV3+ 预训练、nnU-Net 保留默认设置）写明了原因 |
-| Task 7：同一张测试图三个模型并排，挑出欠分割 / 过分割 / 漏检 / 边界不准的例子 | ✅ | `task7_visual_comparison/`，图在 `figures/` |
-| 统计检验：均值 ± 标准差、配对 t 检验 + Holm、Wilcoxon、结果表、Markdown 解释 | ✅ | `task8_statistics/statistical_analysis.ipynb` |
-| Task 8：项目根目录 `segmentation_comparison.md` | ✅ | 数字全部来自实际运行结果 |
-| **理解** Dice / IoU / HD95、统计检验的含义，自己能讲出结果 | ⛔ **未完成** | 和前面的任务一样，"理解"这部分需要你自己拿着 Task 7 的示意图和 Task 8 的 Markdown 解释去消化 |
+| Three subfolders, each with one notebook + one Slurm script | ✅ | `task6_unet/`, `task6_nnunet/`, `task6_deeplabv3plus/` |
+| Use the train.xlsx / test.xlsx split, no random re-splitting | ✅ | 517 / 130; the code asserts that they do not overlap |
+| Check mask naming and correspondence, merge multiple masks | ✅ | Same filename as the image, one mask per image; the `_mask*` OR-merge logic is kept and was checked on the whole dataset |
+| Output binary tumour masks | ✅ | `predictions/*.png` in each folder, original image size |
+| nnU-Net: data conversion (folder layout + dataset.json), training and prediction commands | ✅ | Notebook sections 5–11 |
+| Dice, IoU, HD95 on the test set: means + per-image `per_image_metrics.csv`, same order for all three models | ✅ | The Task 8 notebook asserts the order again |
+| Uniform HD95 rule for empty predictions, documented, number of empty predictions printed | ✅ | HD95 = original image diagonal; empty predictions U-Net 5 / nnU-Net 1 / DeepLabV3+ 0 |
+| End of notebook: original / ground truth / prediction / overlay for every test image | ✅ | All 130 images shown |
+| Model weights and predicted masks saved in each model's folder | ✅ | `outputs/*.pt`; nnU-Net in `nnUNet_results/.../checkpoint_final.pth` |
+| Markdown description before every code cell, comments in the code | ✅ | |
+| Fair comparison: same input size, preprocessing, seed, batch size, optimizer, learning rate, epochs, augmentation; one configuration cell at the top | ✅ | The shared-hyperparameter block is identical in the three notebooks; the differences (DeepLabV3+ pretraining, nnU-Net keeping its defaults) are documented with reasons |
+| Task 7: three models side by side on the same test image; examples of under-segmentation / over-segmentation / missed tumour / inaccurate boundary | ✅ | `task7_visual_comparison/`, figures in `figures/` |
+| Statistics: mean ± SD, paired t-test + Holm, Wilcoxon, results table, Markdown explanations | ✅ | `task8_statistics/statistical_analysis.ipynb` |
+| Task 8: `segmentation_comparison.md` in the project root | ✅ | All numbers come from the actual runs |
+| **Understand** Dice / IoU / HD95 and the statistical tests, and be able to explain the results yourself | ⛔ **not done** | As with the earlier tasks, the "understanding" part is yours: work through the Task 7 illustrations and the Task 8 Markdown explanations |
 
-## 结果质量标准
+## Result quality criteria
 
-这份清单核对的是"PDF 要求的事有没有做"；至于"做出来的结果算不算好"，另开了一份
-`IDEAL_RESULT.md`，列了 6 条理想结果的标准（loss 曲线形状、指标口径、K 折标准差、方法论干净程度、
-概率校准、数据量天花板），每条都标了现在做到了没有，供后续继续调参时参考。
+This checklist tracks whether the things the PDF asks for were done; whether the results are *good* is covered
+in a separate `IDEAL_RESULT.md`, which lists 6 criteria for an ideal result (loss-curve shape, metric
+definition, k-fold standard deviation, methodological cleanliness, probability calibration, data-size
+ceiling), each marked as met or not, for reference when tuning further.
 
-## 总结
+## Summary
 
-- **代码 / 环境 / 训练全部跑通**：数据、notebook、Slurm 提交、正式训练（第 1 次）都已完成，有实际结果。
-- **真正没完成的，是 PDF 里明确写的"你自己去理解"的部分**（学概念、理解每行代码、观察并解读 loss 曲线）。这些没法由我代劳，需要你自己拿着已经跑出来的结果（比如 loss 曲线里的过拟合现象）去问 AI chatbot、结合课程 slides 弄懂。
-- PDF 标题带 "(1)"，可能还有后续文档，建议跟老师确认。
-- 《Research Training Instructions (3)》的 Task 6–8（分割 + 统计检验 + 对比文档）代码、训练和文档都已完成，见第四节。
+- **Code / environment / training all work**: data, notebook, Slurm submission and the first full training
+  run are done, with real results.
+- **What is genuinely not done is the part the PDF explicitly says "understand it yourself"** (learn the
+  concepts, understand every line of code, observe and interpret the loss curves). I cannot do this for you;
+  take the results you already have (e.g. the overfitting visible in the loss curves) to an AI chatbot and the
+  course slides and work through them.
+- The PDF title has "(1)", so there may be follow-up documents — worth confirming with the instructor.
+- Tasks 6–8 of "Research Training Instructions (3)" (segmentation + statistical tests + comparison document)
+  are done in code, training and documentation; see section 4.
