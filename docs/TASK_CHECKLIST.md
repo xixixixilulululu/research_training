@@ -39,6 +39,26 @@
 | 每个代码 cell 前面有文字说明，代码有必要注释 | ✅ | |
 | **借助 AI，理解每一行代码和背后的知识** | ⛔ **未完成** | PDF 原话是"with the help of AI, understand"——这是要你自己去理解，不是我把代码跑出来就算数 |
 
+## 四、Training Task 6–8：BUSI 图像分割（《Research Training Instructions (3)》）
+
+| 要求 | 状态 | 备注 |
+|---|---|---|
+| 建三个子文件夹，每个一个 notebook + 一个 slurm | ✅ | `task6_unet/`、`task6_nnunet/`、`task6_deeplabv3plus/` |
+| 用 train.xlsx / test.xlsx 划分，不重新随机划分 | ✅ | 517 / 130，代码里断言两边不重叠 |
+| 检查 mask 命名和对应关系，多 mask 要合并 | ✅ | 文件名与原图完全相同、每张图一个 mask；仍保留 `_mask*` 的 OR 合并逻辑，并在全数据上核对过 |
+| 输出肿瘤区域的二值 mask | ✅ | 每个文件夹 `predictions/*.png`，原图尺寸 |
+| nnU-Net：数据格式转换（目录结构 + dataset.json）、训练、预测命令 | ✅ | notebook 第 5–11 节 |
+| 测试集上算 Dice、IoU、HD95，均值 + 逐图 `per_image_metrics.csv`，三个模型顺序一致 | ✅ | Task 8 notebook 再次断言了顺序一致 |
+| 预测为空时 HD95 的统一规则，写清楚并打印空预测数量 | ✅ | HD95 = 原图对角线；空预测 U-Net 5 / nnU-Net 1 / DeepLabV3+ 0 |
+| notebook 结尾逐张显示 原图 / 真实 mask / 预测 mask / 叠加图 | ✅ | 130 张全部显示 |
+| 模型权重和预测 mask 存在各自文件夹 | ✅ | `outputs/*.pt`；nnU-Net 在 `nnUNet_results/.../checkpoint_final.pth` |
+| 每个代码单元格前有 Markdown 说明，代码有注释 | ✅ | |
+| 公平比较：统一输入尺寸、预处理、种子、batch、优化器、学习率、epoch、增强；开头集中的配置单元格 | ✅ | 三个 notebook 共享超参数块逐字一致；差异（DeepLabV3+ 预训练、nnU-Net 保留默认设置）写明了原因 |
+| Task 7：同一张测试图三个模型并排，挑出欠分割 / 过分割 / 漏检 / 边界不准的例子 | ✅ | `task7_visual_comparison/`，图在 `figures/` |
+| 统计检验：均值 ± 标准差、配对 t 检验 + Holm、Wilcoxon、结果表、Markdown 解释 | ✅ | `task8_statistics/statistical_analysis.ipynb` |
+| Task 8：项目根目录 `segmentation_comparison.md` | ✅ | 数字全部来自实际运行结果 |
+| **理解** Dice / IoU / HD95、统计检验的含义，自己能讲出结果 | ⛔ **未完成** | 和前面的任务一样，"理解"这部分需要你自己拿着 Task 7 的示意图和 Task 8 的 Markdown 解释去消化 |
+
 ## 结果质量标准
 
 这份清单核对的是"PDF 要求的事有没有做"；至于"做出来的结果算不算好"，另开了一份
@@ -50,3 +70,4 @@
 - **代码 / 环境 / 训练全部跑通**：数据、notebook、Slurm 提交、正式训练（第 1 次）都已完成，有实际结果。
 - **真正没完成的，是 PDF 里明确写的"你自己去理解"的部分**（学概念、理解每行代码、观察并解读 loss 曲线）。这些没法由我代劳，需要你自己拿着已经跑出来的结果（比如 loss 曲线里的过拟合现象）去问 AI chatbot、结合课程 slides 弄懂。
 - PDF 标题带 "(1)"，可能还有后续文档，建议跟老师确认。
+- 《Research Training Instructions (3)》的 Task 6–8（分割 + 统计检验 + 对比文档）代码、训练和文档都已完成，见第四节。

@@ -1,0 +1,20 @@
+category,image_name,unet_dice,unet_hd95,unet_flag,nnunet_dice,nnunet_hd95,nnunet_flag,deeplabv3plus_dice,deeplabv3plus_hd95,deeplabv3plus_flag
+typical,benign (72).png,0.947,9.8,,0.929,12.0,,0.916,302.2,
+typical,malignant (1).png,0.879,43.8,,0.892,36.6,,0.866,48.8,
+typical,malignant (203).png,0.665,102.4,,0.699,92.8,,0.726,97.1,
+missed,malignant (59).png,0.634,97.2,False,0.921,33.0,False,0.003,297.2,True
+missed,malignant (45).png,0.473,297.8,False,0.009,341.4,True,0.012,331.7,True
+missed,benign (199).png,0.108,228.3,True,0.091,228.1,True,0.138,217.4,True
+missed,benign (395).png,0.057,159.0,True,0.943,22.4,False,0.974,8.1,False
+under,benign (335).png,0.202,86.4,True,0.322,94.3,True,0.293,64.8,True
+under,malignant (152).png,0.195,162.0,False,0.212,248.0,True,0.202,258.1,True
+under,benign (122).png,0.0,965.4,False,0.0,965.4,False,0.251,83.5,True
+under,malignant (138).png,0.288,99.8,True,0.657,96.0,False,0.328,93.9,True
+over,malignant (157).png,0.049,319.1,False,0.188,205.1,True,0.082,319.9,False
+over,benign (144).png,0.934,3.0,False,0.339,326.7,True,0.913,4.0,False
+over,benign (169).png,0.007,35.5,False,0.334,351.5,True,0.796,9.0,False
+over,benign (427).png,0.459,125.0,True,0.35,149.4,True,0.541,126.9,True
+boundary,benign (45).png,0.806,328.8,True,0.912,322.3,True,0.846,327.6,True
+boundary,benign (72).png,0.947,9.8,False,0.929,12.0,False,0.916,302.2,True
+boundary,malignant (55).png,0.786,261.6,True,0.907,21.5,True,0.909,18.0,False
+boundary,benign (362).png,0.903,10.3,False,0.835,13.0,False,0.881,258.4,True

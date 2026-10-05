@@ -1,0 +1,10 @@
+metric,comparison,A better on,B better on,ties,mean diff (A−B),median diff (A−B)
+Dice,U-Net vs nnU-Net,68,61,1,-0.0495,0.0013
+Dice,U-Net vs DeepLabV3+,49,78,3,-0.067,-0.0087
+Dice,nnU-Net vs DeepLabV3+,47,83,0,-0.0175,-0.0104
+IoU,U-Net vs nnU-Net,68,61,1,-0.0383,0.0024
+IoU,U-Net vs DeepLabV3+,49,78,3,-0.0694,-0.0135
+IoU,nnU-Net vs DeepLabV3+,47,83,0,-0.0311,-0.0182
+HD95 (px),U-Net vs nnU-Net,60,69,1,33.2249,0.582
+HD95 (px),U-Net vs DeepLabV3+,52,76,2,39.6992,1.266
+HD95 (px),nnU-Net vs DeepLabV3+,53,76,1,6.4743,1.6539

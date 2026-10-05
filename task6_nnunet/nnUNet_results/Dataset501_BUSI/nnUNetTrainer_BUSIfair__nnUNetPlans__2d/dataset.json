@@ -1,0 +1,16 @@
+{
+    "channel_names": {
+        "0": "ultrasound"
+    },
+    "labels": {
+        "background": 0,
+        "tumor": 1
+    },
+    "numTraining": 517,
+    "file_ending": ".png",
+    "licence": "see the original BUSI dataset release",
+    "converted_by": "Please enter your name, especially when sharing datasets with others in a common infrastructure!",
+    "name": "Dataset501_BUSI",
+    "reference": "Al-Dhabyani et al., Dataset of breast ultrasound images, Data in Brief 2020",
+    "description": "BUSI benign+malignant, resized to 256x256, fixed train.xlsx/test.xlsx split"
+}

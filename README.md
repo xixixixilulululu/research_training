@@ -1,11 +1,13 @@
-# research_training — BUSI 乳腺超声图像分类练习
+# research_training — BUSI 乳腺超声图像分类 / 分割练习
 
 按《Research Training Instructions (1)》的 Training Task 1 搭的项目：用 ResNet50（ImageNet 预训练）对 BUSI
-超声图像做良性/恶性二分类。
+超声图像做良性/恶性二分类。之后的 Task 2–5 做了三种分类网络的对比（见 `comparison.md`），
+Task 6–8（《Research Training Instructions (3)》）做肿瘤**分割**，见文末「Training Task 6–8」一节和 `segmentation_comparison.md`。
 
 ## 环境
 - 集群：DGX Spark，Slurm 分区 `gpu`
-- Conda 环境：`~/envs/ml`（已装好 torch/torchvision/pandas/openpyxl/matplotlib/jupyter/ipykernel）
+- Conda 环境：`~/envs/ml`（已装好 torch/torchvision/pandas/openpyxl/matplotlib/jupyter/ipykernel；
+  Task 6–8 又装了 `segmentation_models_pytorch`、`nnunetv2`、`medpy`、`statsmodels`，装之前 dry-run 确认过不会改动 torch）
 - Jupyter kernel 名称：`ml`（display name "Python (ml)"）
 
 ## 文件
@@ -28,7 +30,7 @@
 ```
 ~/datasets/BUSI/
 ├── images/        # 647 张图片：benign (1).png ... malignant (1).png ...
-├── labels/        # 对应的分割 mask（本次分类任务用不到，忽略即可）
+├── labels/        # 对应的分割 mask，文件名与 images/ 完全相同，像素值 0/1（分类任务不用，Task 6–8 分割用）
 ├── train.xlsx     # 517 条训练样本，列: Image, Label
 └── test.xlsx      # 130 条测试样本，列: Image, Label
 ```
@@ -157,3 +159,63 @@ job 号会被别人的任务跳号（比如之前 53 后面直接跳到 56），
 | **run8** | 把 backbone 冻结策略从 layer4 换成 **layer3**（解冻 layer3+layer4+fc，可训练参数更多），patience 恢复到 8 | 相比 layer4 配置（run5~7），**layer3 效果最好**，验证集 F1 在第 5 轮达到峰值 0.9412 |
 | **run9** | 把 `EARLY_STOPPING_PATIENCE` 强行改成 20，跑满全部 20 epoch 不提前停，专门检查第 14~20 轮 | 后面几轮 val F1 都没有超过第 5 轮的 0.9412，**确认第 5 轮就是最优点**，不是 patience=8 提前停止造成的误判 |
 | **run10** | 在同样的 layer3 配置上打开 5 折交叉验证（`USE_KFOLD=True`），每折都从 ImageNet 预训练权重重新训练 | 单次 test 指标看起来一般（Accuracy 0.8692），但 **5 折验证集 Accuracy 均值 0.9168±0.0217、F1 均值 0.9396±0.0155**，证明 layer3 配置的真实水平是稳定、可信的，只是 130 张的单次 test 集抽样偏低了 |
+
+## Training Task 6–8：BUSI 肿瘤分割（U-Net / nnU-Net / DeepLabV3+）
+
+### 目标
+在 BUSI 上训练三个分割模型，对每张测试图输出肿瘤的二值 mask，用 Dice / IoU / HD95 评估，
+画图对比三个模型的失败类型，再用配对统计检验判断差异是否显著，最后写成对比文档
+`segmentation_comparison.md`。
+
+### 数据
+- 原图 `~/datasets/BUSI/images/`，mask `~/datasets/BUSI/labels/`：**文件名一一相同**（`benign (1).png` ↔ `benign (1).png`），
+  每张图只有一个 mask 文件（没有 `_mask_1` 这种多 mask；代码里仍保留了"有多个就按像素 OR 合并"的逻辑），没有空 mask。
+- 划分完全沿用 `train.xlsx`（517）/ `test.xlsx`（130），不重新随机划分，也不再切验证集；三个模型都取**最后一个 epoch** 的权重。
+
+### 怎么跑
+```bash
+cd ~/projects/research_training
+# Task 6：三个模型可以同时提交（GPU 分区只有 2 个节点，第三个会排队）
+(cd task6_unet && sbatch run_task6_unet.slurm)
+(cd task6_nnunet && sbatch run_task6_nnunet.slurm)
+(cd task6_deeplabv3plus && sbatch run_task6_deeplabv3plus.slurm)
+# 三个都跑完后再跑 Task 7 / Task 8（只用 CPU，读 Task 6 的输出）
+(cd task7_visual_comparison && sbatch run_task7_visual_comparison.slurm)
+(cd task8_statistics && sbatch run_task8_statistics.slurm)
+```
+每个 slurm 都是用 `jupyter nbconvert --execute --inplace` 在计算节点上执行 notebook，跑完直接打开 notebook 看输出。
+
+### 步骤 / 文件
+| 文件夹 | 内容 |
+|---|---|
+| `task6_unet/U_Net_segmentation.ipynb` | 经典 U-Net，从头训练；权重 `outputs/unet_final.pt` |
+| `task6_nnunet/nnU_Net_segmentation.ipynb` | nnU-Net v2：转换成 `Dataset501_BUSI` 目录结构 + `dataset.json` → plan & preprocess → 自定义 trainer `nnUNetTrainer_BUSIfair`（100 epoch × 33 iteration，seed 42）→ 训练 → 预测；权重在 `nnUNet_results/.../fold_all/checkpoint_final.pth` |
+| `task6_deeplabv3plus/DeepLabV3Plus_segmentation.ipynb` | DeepLabV3+，ResNet50 编码器用 ImageNet 预训练；权重 `outputs/deeplabv3plus_final.pt` |
+| 以上三个文件夹 | `predictions/*.png`（原图尺寸的二值 mask，0/255）、`per_image_metrics.csv`（`image_name, dice, iou, hd95`，三个模型图片顺序相同）、notebook 结尾逐张显示 原图 / 真实 mask / 预测 mask / 叠加图 |
+| `task7_visual_comparison/visual_comparison.ipynb` | 指标含义的示意图；每张图每个模型的错误类型（漏检 / 欠分割 / 过分割 / 边界不准）；同一张测试图上三个模型并排对比，图存在 `figures/` |
+| `task8_statistics/statistical_analysis.ipynb` | 均值 ± 标准差、两两配对 t 检验 + Holm 校正、Wilcoxon 符号秩检验 + Holm 校正、结果表 `statistical_tests.csv`，以及两种检验结论不一致的原因分析 |
+
+公平比较：三个 notebook 开头的配置单元格里，共享超参数块逐字相同——256×256 输入、灰度 + 每张图 z-score、
+seed 42、batch 16、100 epoch、Adam 1e-4、Dice+BCE、相同的数据增强、相同的推理和指标代码。
+**有记录的差异**：DeepLabV3+ 用了 ImageNet 预训练；nnU-Net 保留了它自己的 SGD 1e-2 + poly 学习率、deep supervision、
+自带的数据增强和自动规划的网络（原因写在 nnU-Net notebook 开头和 `segmentation_comparison.md` 里）。
+**预测为空时**：Dice = IoU = 0，HD95 = 原图对角线长度（最坏情况），这样配对检验不会丢样本。
+
+### 结果（测试集 130 张，均值 ± 标准差）
+| 模型 | Dice | IoU | HD95 (px) | 空预测 |
+|---|---|---|---|---|
+| U-Net | 0.7301 ± 0.3108 | 0.6491 ± 0.3093 | 104.01 ± 162.88 | 5 |
+| nnU-Net | 0.7797 ± 0.2388 | 0.6874 ± 0.2530 | 70.78 ± 114.18 | 1 |
+| DeepLabV3+ | **0.7971 ± 0.2594** | **0.7185 ± 0.2642** | **64.31 ± 90.41** | 0 |
+
+- DeepLabV3+ 平均最好，在 t 检验和 Wilcoxon 两种检验下（Holm 校正后）都显著优于 U-Net（三个指标），IoU 上也显著优于 nnU-Net。
+- U-Net 和 nnU-Net 在"典型图片"上打平（Dice 中位数 0.886 vs 0.890）；nnU-Net 在 t 检验里显著更好，
+  是因为 U-Net 彻底失败的图更多（Dice < 0.1：15 张 vs 4 张），换成 Wilcoxon 就不显著了。
+- 9 组比较里有 4 组两种检验结论不一致；差值分布严重偏离正态，Wilcoxon 的结论更可靠。
+- 详细分析、示例图和局限性见 `segmentation_comparison.md`。
+
+### 跑的过程中遇到的问题
+- DeepLabV3+ 第一次冒烟测试卡死：DataLoader 用多进程 worker（fork）时，在这台 aarch64 节点上会死锁
+  （smp 加载权重时用过多线程 CPU 运算，之后 fork 出来的 worker 卡住）。两个 PyTorch notebook 统一改成
+  `NUM_WORKERS = 0`（数据本来就缓存在内存里，速度几乎没变）。
+- nnU-Net 的 plan/preprocess 大约花了 18 分钟，真正训练约 17 分钟；Slurm 排队时显示的 `InvalidAccount` 只是这台集群关闭了 accounting 后的提示，节点空出来就会正常开始。

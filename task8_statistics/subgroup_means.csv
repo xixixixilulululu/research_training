@@ -1,0 +1,5 @@
+,U-Net,nnU-Net,DeepLabV3+
+benign (n=91) dice,0.7479,0.7976,0.829
+benign (n=91) hd95,100.0754,66.2048,50.5047
+malignant (n=39) dice,0.6887,0.7378,0.7227
+malignant (n=39) hd95,113.1747,81.4563,96.509
