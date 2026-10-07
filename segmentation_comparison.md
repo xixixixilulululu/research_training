@@ -104,6 +104,24 @@ empty-prediction counts from each model's `outputs/*_test_metrics.json`).
 Each empty prediction contributes Dice = IoU = 0 and HD95 = the image diagonal (≈ 700-1000 px),
 so the 5 empty U-Net predictions alone account for a large part of U-Net's HD95 mean and SD.
 
+![Per-image score distributions](task8_statistics/metric_distributions.png)
+
+How to read the box plots: each dot is one test image; the box spans the middle 50% of the
+images (25th-75th percentile), the thick line is the median and the whiskers reach 1.5× the box
+height. The boxes of the three models largely overlap near the top, and what separates them is
+the tail of low-Dice / high-HD95 failure images — longest for U-Net (dots near Dice 0 and HD95 of
+600-1000 px), shortest for DeepLabV3+.
+
+![Mean ± SD per model with robust significant differences](task8_statistics/mean_comparison.png)
+
+Bar height = mean over the 130 test images, error bar = ± 1 standard deviation (HD95 bars are
+clipped at 0 px). A bracket with **\*** marks a pair whose difference is significant after Holm
+correction under **both** the paired t-test and the Wilcoxon signed-rank test (α = 0.05): Dice,
+IoU and HD95 for U-Net vs DeepLabV3+, and IoU for nnU-Net vs DeepLabV3+. Pairs without a
+bracket are not significant under at least one of the two tests (see "Statistical tests" below).
+The error bars overlap even for the starred pairs because the tests compare the models image by
+image (paired), which removes the image-to-image spread that the SD bars show.
+
 Failure counts and subgroups (`task8_statistics/statistical_analysis.ipynb`, section 11):
 
 | | U-Net | nnU-Net | DeepLabV3+ |
@@ -282,4 +300,4 @@ component), which directly targets the distant false positives that dominate the
   `task6_nnunet/nnUNet_results/Dataset501_BUSI/nnUNetTrainer_BUSIfair__nnUNetPlans__2d/fold_all/checkpoint_final.pth`.
 - Metric explanation, error taxonomy and side-by-side figures:
   `task7_visual_comparison/visual_comparison.ipynb`, `figures/`, `error_taxonomy.csv`.
-- Statistics: `task8_statistics/statistical_analysis.ipynb`, `statistical_tests.csv`.
+- Statistics: `task8_statistics/statistical_analysis.ipynb`, `statistical_tests.csv`, `mean_comparison.png`.
